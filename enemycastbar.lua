@@ -1,6 +1,6 @@
 addon.name      = 'EnemyCastBar';
 addon.author    = 'Shiyo';
-addon.version   = '2.2.0.0';
+addon.version   = '2.2.0.1';
 addon.desc      = 'Shows enemy cast bars';
 addon.link      = 'https://ashitaxi.com/';
 
@@ -12,6 +12,7 @@ local textDuration = 0
 local monsterIndex
 local tpId
 local tpString
+local monsterId
 local monsterName
 local spellId
 
@@ -24,8 +25,8 @@ local default_settings = T{
         position_x = 1,
         position_y = 1,
 		background = T{
-			visible = true,
-			color = 0x80000000,
+        visible = true,
+        color = 0x80000000,
 		}
     }
 };
@@ -53,18 +54,18 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
         local actionPacket = ParseActionPacket(e);
         if (actionPacket.Type == 7) and IsMonster(actionPacket.UserIndex) and (myTarget == actionPacket.UserIndex) then -- Mobskill Start
             local actionMessage = actionPacket.Targets[1].Actions[1].Message
-            local monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
+            monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
             monsterIndex = bit.band(monsterId, 0x7FF);
             tpId = ashita.bits.unpack_be(e.data:totable(), 0, 213, 17);
             if (AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256) ~= nil) then
-                tpString = 'using ' .. AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256) 
+                tpString = 'using ' .. AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256)
             end
             monsterName = AshitaCore:GetMemoryManager():GetEntity():GetName(monsterIndex);
             textDuration = 0
             CheckString(tpString)
             if (actionMessage == 0) then -- Magic Interrupted -- Mob Skill interrupted Interrupted
                 -- print('Enemy mob ability interrupted!!');
-                local monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
+                monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
                 monsterIndex = bit.band(monsterId, 0x7FF);
                 textDuration = 0
                 tpId = 0
@@ -75,7 +76,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
         end
         if (actionPacket.Type == 8) and IsMonster(actionPacket.UserIndex) and (myTarget == actionPacket.UserIndex) then  -- Magic start
             local actionMessage = actionPacket.Targets[1].Actions[1].Message
-            local monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
+            monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
             monsterIndex = bit.band(monsterId, 0x7FF);
             spellId = actionPacket.Targets[1].Actions[1].Param
             local spellResource = AshitaCore:GetResourceManager():GetSpellById(spellId);
