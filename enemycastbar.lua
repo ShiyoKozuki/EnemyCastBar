@@ -1,6 +1,6 @@
 addon.name      = 'EnemyCastBar';
 addon.author    = 'Shiyo';
-addon.version   = '2.2.0.1';
+addon.version   = '2.2.0.2';
 addon.desc      = 'Shows enemy cast bars';
 addon.link      = 'https://ashitaxi.com/';
 
@@ -25,15 +25,15 @@ local default_settings = T{
         position_x = 1,
         position_y = 1,
 		background = T{
-        visible = true,
-        color = 0x80000000,
+            visible = true,
+            color = 0x80000000,
 		}
     }
 };
 
 local function CheckString(string)
     if (string ~= nil) then
-        textDuration = os.time() + 5 -- supposed to stop showing after 5s of TP move being used
+        textDuration = os.time() + 5 -- Only display text for 5 seconds
     end
 end
 
@@ -58,7 +58,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
             monsterIndex = bit.band(monsterId, 0x7FF);
             tpId = ashita.bits.unpack_be(e.data:totable(), 0, 213, 17);
             if (AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256) ~= nil) then
-                tpString = 'using ' .. AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256)
+                tpString = 'readies ' .. AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256)
             end
             monsterName = AshitaCore:GetMemoryManager():GetEntity():GetName(monsterIndex);
             textDuration = 0
@@ -114,12 +114,12 @@ ashita.events.register('d3d_present', 'present_cb', function ()
     end
 	if monsterName then
         if tpString and (tpId ~= nil) then
-            enemycastbar.font.text = ('%s %s'):fmt(monsterName, tpString);
+            enemycastbar.font.text = ('%s%s'):fmt(monsterName, tpString);
             enemycastbar.settings.font.position_x = enemycastbar.font:GetPositionX();
             enemycastbar.settings.font.position_y = enemycastbar.font:GetPositionY();
             enemycastbar.font.visible = true;
         elseif monsterName and (spellId ~= nil) then
-            enemycastbar.font.text = ('%s %s'):fmt(monsterName, spellString);
+            enemycastbar.font.text = ('%s%s'):fmt(monsterName, spellString);
             enemycastbar.settings.font.position_x = enemycastbar.font:GetPositionX();
             enemycastbar.settings.font.position_y = enemycastbar.font:GetPositionY();
             enemycastbar.font.visible = true;
