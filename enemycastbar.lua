@@ -1,11 +1,11 @@
 addon.name      = 'EnemyCastBar';
 addon.author    = 'Shiyo';
-addon.version   = '2.1.0.0';
+addon.version   = '2.2.0.0';
 addon.desc      = 'Shows enemy cast bars';
 addon.link      = 'https://ashitaxi.com/';
 
 require('common');
-require ('shiyolibs')
+require ('enemycastbarlibs')
 local fonts = require('fonts');
 local settings = require('settings');
 local textDuration = 0
@@ -51,8 +51,8 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
     -- Packet: Action
     if (e.id == 0x028) then
         local actionPacket = ParseActionPacket(e);
-        local category = ashita.bits.unpack_be(e.data:totable(), 0, 82, 4);
-        if (actionPacket.Type  == 7) and IsMonster(actionPacket.UserIndex) and (myTarget == actionPacket.UserIndex) then -- Mobskill Start
+        if (actionPacket.Type == 7) and IsMonster(actionPacket.UserIndex) and (myTarget == actionPacket.UserIndex) then -- Mobskill Start
+            local actionMessage = actionPacket.Targets[1].Actions[1].Message
             local monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
             monsterIndex = bit.band(monsterId, 0x7FF);
             tpId = ashita.bits.unpack_be(e.data:totable(), 0, 213, 17);
@@ -62,16 +62,19 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
             monsterName = AshitaCore:GetMemoryManager():GetEntity():GetName(monsterIndex);
             textDuration = 0
             CheckString(tpString)
-        elseif (actionPacket.Type == 35) and IsMonster(actionPacket.UserIndex) and (myTarget == actionPacket.UserIndex) then -- Mob Skill interrupted Interrupted
-            -- print('Enemy mob ability interrupted!!');
-            textDuration = 0
-            tpId = 0
-            tpString = 'TP move was interrupted!'
-            monsterName = AshitaCore:GetMemoryManager():GetEntity():GetName(monsterIndex);
-            textDuration = 0
-            CheckString(tpString)
+            if (actionMessage == 0) then -- Magic Interrupted -- Mob Skill interrupted Interrupted
+                -- print('Enemy mob ability interrupted!!');
+                local monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
+                monsterIndex = bit.band(monsterId, 0x7FF);
+                textDuration = 0
+                tpId = 0
+                tpString = '\'s TP move interrupted!!!'
+                monsterName = AshitaCore:GetMemoryManager():GetEntity():GetName(monsterIndex);
+                CheckString(tpString)
+            end
         end
         if (actionPacket.Type == 8) and IsMonster(actionPacket.UserIndex) and (myTarget == actionPacket.UserIndex) then  -- Magic start
+            local actionMessage = actionPacket.Targets[1].Actions[1].Message
             local monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
             monsterIndex = bit.band(monsterId, 0x7FF);
             spellId = actionPacket.Targets[1].Actions[1].Param
@@ -85,14 +88,14 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
                 textDuration = 0
                 -- print(string.format('monsterName: %s', monsterName));
                 CheckString(spellString)
-            elseif (actionPacket.Type == 31) and IsMonster(actionPacket.UserIndex) and (myTarget == actionPacket.UserIndex) then -- Magic Interrupted
+            end
+            if (actionMessage == 0) then -- Magic Interrupted
                 -- print('Enemy spell interrupted!!');
                 textDuration = 0
-                spellString = 'spell was interrupted!'
+                spellString = '\'s spell interrupted!!!'
                 monsterName = AshitaCore:GetMemoryManager():GetEntity():GetName(monsterIndex);
-                textDuration = 0
                 CheckString(spellString)
-            end
+           end
         end
     end
 end);
@@ -110,12 +113,12 @@ ashita.events.register('d3d_present', 'present_cb', function ()
     end
 	if monsterName then
         if tpString and (tpId ~= nil) then
-            enemycastbar.font.text = ('%s %s!'):fmt(monsterName, tpString);
+            enemycastbar.font.text = ('%s %s'):fmt(monsterName, tpString);
             enemycastbar.settings.font.position_x = enemycastbar.font:GetPositionX();
             enemycastbar.settings.font.position_y = enemycastbar.font:GetPositionY();
             enemycastbar.font.visible = true;
         elseif monsterName and (spellId ~= nil) then
-            enemycastbar.font.text = ('%s %s!'):fmt(monsterName, spellString);
+            enemycastbar.font.text = ('%s %s'):fmt(monsterName, spellString);
             enemycastbar.settings.font.position_x = enemycastbar.font:GetPositionX();
             enemycastbar.settings.font.position_y = enemycastbar.font:GetPositionY();
             enemycastbar.font.visible = true;
