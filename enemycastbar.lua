@@ -34,13 +34,6 @@ local default_settings = T{
     }
 };
 
-local UpdateSettings = function()
-    if (enemycastbar.font ~= nil) then
-        enemycastbar.font:destroy();
-    end
-    enemycastbar.font = fonts.new(enemycastbar.settings.font);
-  end
-
 local function CheckString(string)
     if (string ~= nil) then
         textDuration = os.time() + 5 -- Only display text for 5 seconds
@@ -50,6 +43,13 @@ end
 local enemycastbar = T{
 	settings = settings.load(default_settings)
 };
+
+local UpdateSettings = function()
+    if (enemycastbar.font ~= nil) then
+        enemycastbar.font:destroy();
+    end
+    enemycastbar.font = fonts.new(enemycastbar.settings.font);
+end
 
 
 ashita.events.register('load', 'load_cb', function ()
