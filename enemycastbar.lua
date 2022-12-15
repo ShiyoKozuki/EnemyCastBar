@@ -16,6 +16,9 @@ local monsterId
 local monsterName
 local spellId
 
+local windowWidth = AshitaCore:GetConfigurationManager():GetFloat('boot', 'ffxi.registry', '0001', 1024);
+local windowHeight = AshitaCore:GetConfigurationManager():GetFloat('boot', 'ffxi.registry', '0002', 768);
+
 local default_settings = T{
 	font = T{
         visible = true,
@@ -31,6 +34,13 @@ local default_settings = T{
     }
 };
 
+local UpdateSettings = function()
+    if (enemycastbar.font ~= nil) then
+        enemycastbar.font:destroy();
+    end
+    enemycastbar.font = fonts.new(enemycastbar.settings.font);
+  end
+
 local function CheckString(string)
     if (string ~= nil) then
         textDuration = os.time() + 5 -- Only display text for 5 seconds
@@ -44,7 +54,9 @@ local enemycastbar = T{
 
 ashita.events.register('load', 'load_cb', function ()
     enemycastbar.font = fonts.new(enemycastbar.settings.font);
-end);
+    settings.register('settings', 'settingchange', UpdateSettings);
+  end);
+  
 
 
 ashita.events.register('packet_in', 'packet_in_cb', function (e)
@@ -102,6 +114,20 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
 end);
 
 ashita.events.register('d3d_present', 'present_cb', function ()
+
+    local fontObject = enemycastbar.font;
+    if (fontObject.position_x > windowWidth) then
+      fontObject.position_x = 0;
+    end
+    if (fontObject.position_y > windowHeight) then
+      fontObject.position_y = 0;
+    end
+    if (fontObject.position_x ~= enemycastbar.settings.font.position_x) or (fontObject.position_y ~= enemycastbar.settings.font.position_y) then
+        enemycastbar.settings.font.position_x = fontObject.position_x;
+        enemycastbar.settings.font.position_y = fontObject.position_y;
+        settings.save()
+    end
+
     if (os.time() > textDuration ) then
         -- Hide text, reset variables to nil
         enemycastbar.font.visible = false;
@@ -115,13 +141,9 @@ ashita.events.register('d3d_present', 'present_cb', function ()
 	if monsterName then
         if tpString and (tpId ~= nil) then
             enemycastbar.font.text = ('%s%s'):fmt(monsterName, tpString);
-            enemycastbar.settings.font.position_x = enemycastbar.font:GetPositionX();
-            enemycastbar.settings.font.position_y = enemycastbar.font:GetPositionY();
             enemycastbar.font.visible = true;
         elseif monsterName and (spellId ~= nil) then
             enemycastbar.font.text = ('%s%s'):fmt(monsterName, spellString);
-            enemycastbar.settings.font.position_x = enemycastbar.font:GetPositionX();
-            enemycastbar.settings.font.position_y = enemycastbar.font:GetPositionY();
             enemycastbar.font.visible = true;
         else
             enemycastbar.font.visible = false;
