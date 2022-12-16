@@ -1,6 +1,6 @@
 addon.name      = 'EnemyCastBar';
 addon.author    = 'Shiyo';
-addon.version   = '2.2.0.2';
+addon.version   = '1.0.0.1';
 addon.desc      = 'Shows enemy cast bars';
 addon.link      = 'https://ashitaxi.com/';
 
@@ -68,12 +68,15 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
             monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
             monsterIndex = bit.band(monsterId, 0x7FF);
             tpId = ashita.bits.unpack_be(e.data:totable(), 0, 213, 17);
-            if (AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256) ~= nil) then
-                tpName = AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256)
-                tpString = ' readies ' .. tpName
-            elseif (tpId < 256) then
+            if (tpId < 256) then
                 tpName = AshitaCore:GetResourceManager():GetAbilityById(tpId)
                 tpString = ' readies ' .. tpName.Name[1]
+            else
+                local tempName = AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256);
+                if (tempName ~= nil) then
+                    tpName = tempName;
+                    tpString = ' readies ' .. tpName
+                end
             end
             monsterName = AshitaCore:GetMemoryManager():GetEntity():GetName(monsterIndex);
             textDuration = 0
