@@ -44,11 +44,11 @@ local enemycastbar = T{
 	settings = settings.load(default_settings)
 };
 
-local UpdateSettings = function()
+local UpdateSettings = function(settings)
+    enemycastbar.settings = settings;
     if (enemycastbar.font ~= nil) then
-        enemycastbar.font:destroy();
+        enemycastbar.font:apply(enemycastbar.settings.font)
     end
-    enemycastbar.font = fonts.new(enemycastbar.settings.font);
 end
 
 
