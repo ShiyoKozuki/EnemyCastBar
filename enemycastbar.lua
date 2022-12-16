@@ -25,8 +25,8 @@ local default_settings = T{
         font_family = 'Arial',
         font_height = 18,
         color = 0xFFFFFFFF,
-        position_x = 483,
-        position_y = 804,
+        position_x = 785,
+        position_y = 470,
 		background = T{
             visible = true,
             color = 0x80000000,
@@ -55,9 +55,7 @@ end
 ashita.events.register('load', 'load_cb', function ()
     enemycastbar.font = fonts.new(enemycastbar.settings.font);
     settings.register('settings', 'settingchange', UpdateSettings);
-  end);
-  
-
+end);
 
 ashita.events.register('packet_in', 'packet_in_cb', function (e)
     local myTarget = AshitaCore:GetMemoryManager():GetTarget():GetTargetIndex(AshitaCore:GetMemoryManager():GetTarget():GetIsSubTargetActive())
@@ -156,6 +154,6 @@ ashita.events.register('unload', 'unload_cb', function ()
     if (enemycastbar.font ~= nil) then
         enemycastbar.font:destroy();
     end
-settings.save();
+    settings.save();
 end);
 
