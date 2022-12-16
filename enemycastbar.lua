@@ -15,6 +15,7 @@ local tpString
 local monsterId
 local monsterName
 local spellId
+local tpName
 
 local windowWidth = AshitaCore:GetConfigurationManager():GetFloat('boot', 'ffxi.registry', '0001', 1024);
 local windowHeight = AshitaCore:GetConfigurationManager():GetFloat('boot', 'ffxi.registry', '0002', 768);
@@ -68,12 +69,16 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
             monsterIndex = bit.band(monsterId, 0x7FF);
             tpId = ashita.bits.unpack_be(e.data:totable(), 0, 213, 17);
             if (AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256) ~= nil) then
-                tpString = ' readies ' .. AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256)
+                tpName = AshitaCore:GetResourceManager():GetString('monsters.abilities', tpId - 256)
+                tpString = ' readies ' .. tpName
+            elseif (tpId < 256) then
+                tpName = AshitaCore:GetResourceManager():GetAbilityById(tpId)
+                tpString = ' readies ' .. tpName.Name[1]
             end
             monsterName = AshitaCore:GetMemoryManager():GetEntity():GetName(monsterIndex);
             textDuration = 0
             CheckString(tpString)
-            if (actionMessage == 0) then -- Magic Interrupted -- Mob Skill interrupted Interrupted
+            if (actionMessage == 0) then -- Mob Skill interrupted
                 -- print('Enemy mob ability interrupted!!');
                 monsterId = struct.unpack('L', e.data, 0x05 + 0x01);
                 monsterIndex = bit.band(monsterId, 0x7FF);
