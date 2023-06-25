@@ -2,7 +2,7 @@ addon.name      = 'EnemyCastBar';
 addon.author    = 'Shiyo';
 addon.version   = '1.0.0.1';
 addon.desc      = 'Shows enemy cast bars';
-addon.link      = 'https://ashitaxi.com/';
+addon.link      = 'https://github.com/ShiyoKozuki';
 
 require('common');
 require ('enemycastbarlibs')
